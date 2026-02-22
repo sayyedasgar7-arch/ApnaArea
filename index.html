@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>ApnaArea – अपना क्षेत्र</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --cream:#f5f0e8;--beige:#e8dfc8;--sand:#d4c9a8;
+  --olive:#6b7c5c;--olive-dk:#4a5a3a;--olive-lt:#8a9e78;
+  --bark:#3d2e1e;--bark-lt:#6b5540;--stone:#9e9485;--stone-lt:#c4bdb0;
+  --white:#fdfaf5;--error:#9b4444;--success:#4a7c4e;
+  --r-sm:8px;--r-md:14px;--r-lg:22px;
+  --sh-sm:0 1px 4px rgba(61,46,30,.08);
+  --sh-md:0 4px 20px rgba(61,46,30,.12);
+  --fd:'Fraunces',Georgia,serif;--fb:'Jost',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--cream);color:var(--bark);min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--beige)}
+::-webkit-scrollbar-thumb{background:var(--sand);border-radius:4px}
+h1,h2,h3{font-family:var(--fd)}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
+.load-logo{font-family:var(--fd);font-size:28px;color:var(--olive-dk)}
+.load-logo span{color:var(--stone)}
+.load-bar{width:120px;height:2px;background:var(--sand);border-radius:2px;overflow:hidden}
+.load-bar::after{content:'';display:block;height:100%;width:40%;background:var(--olive);animation:loadslide 1.2s ease-in-out infinite}
+@keyframes loadslide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+
+/* INPUTS */
+.inp{width:100%;background:var(--white);border:1.5px solid var(--sand);color:var(--bark);border-radius:var(--r-md);padding:13px 16px;font-family:var(--fb);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:10px}
+.inp:focus{border-color:var(--olive);box-shadow:0 0 0 3px rgba(107,124,92,.12)}
+.inp::placeholder{color:var(--stone)}
+select.inp{cursor:pointer}
+
+/* BUTTONS */
+.btn{width:100%;background:var(--olive-dk);color:var(--cream);border:none;border-radius:var(--r-md);padding:14px 20px;font-family:var(--fb);font-weight:600;font-size:15px;cursor:pointer;transition:background .2s,transform .1s;box-shadow:var(--sh-sm)}
+.btn:hover{background:var(--olive)}
+.btn:active{transform:scale(.98)}
+.btn.outline{background:transparent;color:var(--olive-dk);border:1.5px solid var(--olive-dk)}
+.btn.outline:hover{background:var(--beige)}
+.btn.sm{width:auto;padding:7px 14px;font-size:13px;border-radius:var(--r-sm)}
+.btn.danger{background:var(--error)}
+.btn.success-b{background:var(--success)}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--beige);border-radius:var(--r-lg);padding:22px;box-shadow:var(--sh-sm)}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.open{background:#dff0df;color:#3a6e3a;border:1px solid #b8d8b8}
+.badge.closed{background:#f0dfdf;color:#7a3a3a;border:1px solid #d8b8b8}
+.badge.pending{background:#f5edd8;color:#7a5a2a;border:1px solid #d8c898}
+.badge.verified{background:#dde8f5;color:#2a4a7a;border:1px solid #b8c8e8}
+.badge.role-b{background:var(--beige);color:var(--olive-dk);border:1px solid var(--sand)}
+
+/* MSG */
+.msg{padding:10px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;margin-top:8px}
+.msg.error{background:#f5e8e8;color:var(--error);border:1px solid #ddb8b8}
+.msg.success{background:#e8f5e8;color:var(--success);border:1px solid #b8d8b8}
+
+/* ══ AUTH — PUBLIC ══ */
+#auth-screen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,var(--cream) 0%,var(--beige) 100%)}
+.auth-logo-wrap{text-align:center;margin-bottom:36px}
+.auth-icon{font-size:44px;margin-bottom:12px;display:block}
+.auth-title{font-family:var(--fd);font-size:38px;font-weight:900;color:var(--bark);letter-spacing:-1px;line-height:1}
+.auth-title span{color:var(--olive)}
+.auth-tagline{color:var(--stone);font-size:14px;margin-top:8px;font-weight:300}
+.auth-card{width:100%;max-width:400px}
+.lang-bar{display:flex;background:var(--beige);border-radius:var(--r-sm);padding:3px;margin-bottom:24px}
+.lang-btn{flex:1;padding:9px;border:none;border-radius:6px;background:transparent;color:var(--stone);font-family:var(--fb);font-weight:600;font-size:14px;cursor:pointer;transition:.2s}
+.lang-btn.active{background:var(--white);color:var(--olive-dk);box-shadow:var(--sh-sm)}
+.steps{display:flex;gap:6px;margin-bottom:22px}
+.step-dot{flex:1;height:3px;border-radius:3px;background:var(--sand);transition:background .3s}
+.step-dot.active{background:var(--olive)}
+.auth-step{display:none}
+.auth-step.active{display:block}
+.step-title{font-family:var(--fd);font-size:20px;font-weight:700;margin-bottom:6px}
+.step-sub{color:var(--stone);font-size:13px;margin-bottom:20px;line-height:1.5}
+
+/* ROLE CARDS — only 2 (no admin!) */
+.role-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.role-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--sand);border-radius:var(--r-md);cursor:pointer;background:var(--white);transition:.2s}
+.role-card:hover{border-color:var(--olive-lt)}
+.role-card.selected{border-color:var(--olive-dk);background:var(--beige)}
+.role-icon{font-size:24px}
+.role-info{flex:1}
+.role-name{font-weight:600;font-size:14px}
+.role-desc{font-size:12px;color:var(--stone);margin-top:2px}
+.role-check{font-size:18px;color:var(--olive-dk);opacity:0;transition:.2s}
+.role-card.selected .role-check{opacity:1}
+
+/* OTP */
+.otp-inputs{display:flex;gap:10px;justify-content:center;margin:20px 0}
+.otp-box{width:46px;height:54px;text-align:center;font-size:20px;font-weight:700;font-family:var(--fd);background:var(--white);border:1.5px solid var(--sand);border-radius:var(--r-sm);color:var(--bark);outline:none;transition:border-color .2s}
+.otp-box:focus{border-color:var(--olive);box-shadow:0 0 0 3px rgba(107,124,92,.12)}
+
+/* ══ ADMIN AUTH — SEPARATE SECRET PAGE ══ */
+#admin-screen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,var(--bark) 0%,var(--bark-lt) 100%)}
+.admin-auth-card{width:100%;max-width:360px}
+.admin-auth-title{font-family:var(--fd);font-size:32px;font-weight:900;color:var(--cream);text-align:center;margin-bottom:6px}
+.admin-auth-sub{color:var(--stone-lt);font-size:13px;text-align:center;margin-bottom:32px}
+.admin-auth-card .inp{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--cream)}
+.admin-auth-card .inp::placeholder{color:var(--stone-lt)}
+.admin-auth-card .inp:focus{border-color:var(--olive-lt)}
+.admin-auth-card .btn{background:var(--olive);color:var(--cream)}
+.admin-auth-card .btn:hover{background:var(--olive-lt)}
+.admin-secret-note{text-align:center;margin-top:20px;font-size:11px;color:var(--stone-lt);opacity:.6}
+
+/* ══ APP SHELL ══ */
+#app-shell{display:none;flex-direction:column;min-height:100vh}
+.app-header{position:sticky;top:0;z-index:200;background:var(--white);border-bottom:1px solid var(--beige);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh-sm)}
+.header-logo{font-family:var(--fd);font-size:20px;font-weight:900;color:var(--bark)}
+.header-logo span{color:var(--olive)}
+.header-right{display:flex;align-items:center;gap:8px}
+.header-lang{background:var(--beige);border:none;border-radius:20px;padding:5px 12px;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--olive-dk);cursor:pointer}
+.header-logout{background:none;border:1px solid var(--sand);border-radius:20px;padding:5px 12px;font-family:var(--fb);font-size:12px;color:var(--stone);cursor:pointer;font-weight:500}
+#main-view{flex:1;overflow-y:auto;padding-bottom:72px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--beige);display:flex;z-index:200;box-shadow:0 -4px 20px rgba(61,46,30,.06)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0;border:none;background:none;cursor:pointer;font-family:var(--fb);color:var(--stone-lt);transition:color .2s;gap:3px}
+.nav-icon{font-size:20px}
+.nav-lbl{font-size:10px;font-weight:600;letter-spacing:.3px}
+.nav-item.active{color:var(--olive-dk)}
+
+/* ══ HOME ══ */
+.home-hero{background:linear-gradient(135deg,var(--olive-dk) 0%,var(--olive) 100%);padding:24px 18px 20px;color:var(--cream)}
+.home-greeting{font-size:13px;opacity:.75;margin-bottom:4px;font-weight:300}
+.home-title{font-family:var(--fd);font-size:24px;font-weight:700;margin-bottom:16px}
+.location-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;margin-bottom:16px;transition:background .2s;max-width:100%}
+.location-pill:hover{background:rgba(255,255,255,.22)}
+.loc-dot{width:7px;height:7px;background:#7eff7e;border-radius:50%;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.search-wrap{position:relative}
+.search-inp{width:100%;background:var(--white);border:none;border-radius:var(--r-md);padding:13px 16px 13px 42px;font-family:var(--fb);font-size:15px;outline:none;color:var(--bark);box-shadow:var(--sh-md)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+.filter-bar{padding:14px 18px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-chip{padding:7px 16px;border-radius:20px;border:1.5px solid var(--sand);background:var(--white);color:var(--stone);font-family:var(--fb);font-weight:600;font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.filter-chip.active{background:var(--olive-dk);color:var(--cream);border-color:var(--olive-dk)}
+.open-chip{margin-left:auto;padding:7px 16px;border-radius:20px;border:1.5px solid var(--sand);background:var(--white);color:var(--stone);font-family:var(--fb);font-weight:600;font-size:12px;cursor:pointer;transition:all .2s}
+.open-chip.active{background:#e8f5e8;color:#3a6e3a;border-color:#b8d8b8}
+.cat-strip{padding:12px 18px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.cat-strip::-webkit-scrollbar{display:none}
+.cat-pill{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;border:1.5px solid var(--sand);background:var(--white);color:var(--bark);font-family:var(--fb);font-weight:500;font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.cat-pill.active{background:var(--olive-dk);color:var(--cream);border-color:var(--olive-dk)}
+.shops-wrap{padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.shop-card{background:var(--white);border:1px solid var(--beige);border-radius:var(--r-lg);padding:18px;cursor:pointer;transition:all .2s;box-shadow:var(--sh-sm)}
+.shop-card:hover{border-color:var(--olive-lt);box-shadow:var(--sh-md);transform:translateY(-1px)}
+.shop-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
+.shop-icon-w{width:46px;height:46px;background:var(--beige);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.shop-name{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--bark);line-height:1.2}
+.shop-cat{font-size:12px;color:var(--stone);margin-top:3px}
+.shop-addr{font-size:13px;color:var(--stone);margin-bottom:12px}
+.shop-bottom{display:flex;justify-content:space-between;align-items:center}
+.shop-dist{font-size:13px;font-weight:600;color:var(--olive-dk)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--stone);font-size:15px;line-height:2}
+.empty-icon{font-size:48px;display:block;margin-bottom:12px}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(61,46,30,.5);z-index:500;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:0 0 32px;animation:slideup .25s ease}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--sand);border-radius:4px;margin:14px auto 20px}
+.modal-body{padding:0 22px}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.modal-title{font-family:var(--fd);font-size:22px;font-weight:800}
+.modal-close{background:var(--beige);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.modal-detail{font-size:14px;color:var(--stone);margin-bottom:6px}
+.action-row{display:flex;gap:10px;margin:18px 0}
+.action-btn{flex:1;padding:13px;border-radius:var(--r-md);border:none;font-family:var(--fb);font-weight:600;font-size:14px;cursor:pointer;transition:.2s}
+.action-btn.primary{background:var(--olive-dk);color:var(--cream)}
+.action-btn.primary:hover{background:var(--olive)}
+.action-btn.secondary{background:var(--beige);color:var(--bark);border:1px solid var(--sand)}
+.inv-title{font-family:var(--fd);font-size:16px;font-weight:700;margin-bottom:12px;margin-top:20px}
+.inv-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--beige)}
+.inv-name{font-weight:600;font-size:14px}
+.inv-updated{font-size:11px;color:var(--stone);margin-top:2px}
+.inv-price{font-weight:700;font-size:14px;color:var(--olive-dk)}
+
+/* OWNER */
+.view-wrap{padding:18px}
+.view-title{font-family:var(--fd);font-size:24px;font-weight:800;margin-bottom:4px}
+.view-sub{font-size:13px;color:var(--stone);margin-bottom:20px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat-box{background:var(--white);border:1px solid var(--beige);border-radius:var(--r-md);padding:18px;text-align:center}
+.stat-num{font-family:var(--fd);font-size:28px;font-weight:900;color:var(--olive-dk)}
+.stat-lbl{font-size:12px;color:var(--stone);margin-top:4px;font-weight:500}
+.tog-sw{width:48px;height:26px;background:var(--sand);border-radius:13px;border:none;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0}
+.tog-sw::after{content:'';position:absolute;width:20px;height:20px;background:var(--white);border-radius:50%;top:3px;left:3px;transition:transform .3s;box-shadow:var(--sh-sm)}
+.tog-sw.on{background:var(--success)}
+.tog-sw.on::after{transform:translateX(22px)}
+.sec-title{font-family:var(--fd);font-size:17px;font-weight:700;margin-bottom:14px}
+.inv-form{display:flex;flex-direction:column;gap:0;margin-bottom:16px}
+.inv-row-e{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--beige)}
+.inv-acts{display:flex;gap:6px;align-items:center}
+
+/* ADMIN PANEL */
+.admin-banner{background:linear-gradient(135deg,var(--bark) 0%,var(--bark-lt) 100%);padding:22px 18px;color:var(--cream);display:flex;justify-content:space-between;align-items:center}
+.admin-banner h2{font-family:var(--fd);font-size:22px}
+.admin-banner p{font-size:13px;opacity:.7;margin-top:4px}
+.tab-nav{display:flex;border-bottom:1px solid var(--beige);background:var(--white);overflow-x:auto}
+.tab-btn{flex:1;padding:12px 8px;border:none;background:none;font-family:var(--fb);font-weight:600;font-size:12px;color:var(--stone);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;min-width:60px}
+.tab-btn.active{color:var(--olive-dk);border-bottom-color:var(--olive-dk)}
+.tab-content{padding:18px;display:none}
+.tab-content.active{display:block}
+.p-card{background:var(--white);border:1px solid var(--beige);border-radius:var(--r-md);padding:16px;margin-bottom:10px}
+.p-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.p-name{font-weight:700;font-size:15px}
+.p-meta{font-size:12px;color:var(--stone);margin-top:3px}
+.log-item{padding:10px 0;border-bottom:1px solid var(--beige);font-size:13px;display:flex;justify-content:space-between;gap:10px}
+.log-action{color:var(--bark);font-weight:500}
+.log-time{font-size:11px;color:var(--stone);white-space:nowrap}
+
+/* CITY PICKER */
+.city-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin-top:8px}
+.city-btn{padding:12px 8px;background:var(--white);border:1.5px solid var(--sand);border-radius:var(--r-md);font-family:var(--fb);font-size:13px;font-weight:600;color:var(--bark);cursor:pointer;transition:.2s}
+.city-btn:hover{border-color:var(--olive);background:var(--beige)}
+
+@media(min-width:600px){
+  .shops-wrap,.view-wrap,.tab-content{max-width:640px;margin-left:auto;margin-right:auto}
+  .modal-bg{align-items:center}
+  .modal-sheet{border-radius:24px;margin:20px;max-height:85vh}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="load-logo">Apna<span>Area</span></div>
+  <div class="load-bar"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PUBLIC LOGIN (Users & Shop Owners only)
+     No Admin option here!
+══════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-logo-wrap">
+    <span class="auth-icon">📍</span>
+    <h1 class="auth-title">Apna<span>Area</span></h1>
+    <p class="auth-tagline" id="auth-tagline">Your neighbourhood, connected</p>
+  </div>
+  <div class="card auth-card">
+    <div class="lang-bar">
+      <button class="lang-btn active" id="lang-en" onclick="setLang('en')">English</button>
+      <button class="lang-btn"        id="lang-hi" onclick="setLang('hi')">हिंदी</button>
+    </div>
+    <div class="steps">
+      <div class="step-dot active" id="dot-0"></div>
+      <div class="step-dot"        id="dot-1"></div>
+      <div class="step-dot"        id="dot-2"></div>
+    </div>
+
+    <!-- STEP 0: Role (only Public & Shop Owner) -->
+    <div class="auth-step active" id="step-0">
+      <div class="step-title" id="s0-title">Welcome!</div>
+      <div class="step-sub"   id="s0-sub">How will you use ApnaArea?</div>
+      <div class="role-cards">
+        <div class="role-card selected" id="role-public" onclick="selectRole('public')">
+          <div class="role-icon">🏘️</div>
+          <div class="role-info">
+            <div class="role-name" id="rn-public">Public User</div>
+            <div class="role-desc" id="rd-public">Browse & discover local shops near you</div>
+          </div>
+          <div class="role-check">✓</div>
+        </div>
+        <div class="role-card" id="role-shop_owner" onclick="selectRole('shop_owner')">
+          <div class="role-icon">🏪</div>
+          <div class="role-info">
+            <div class="role-name" id="rn-owner">Shop Owner</div>
+            <div class="role-desc" id="rd-owner">List your shop & manage inventory</div>
+          </div>
+          <div class="role-check">✓</div>
+        </div>
+      </div>
+      <button class="btn" id="s0-btn" onclick="goStep(1)">Continue →</button>
+    </div>
+
+    <!-- STEP 1: Email -->
+    <div class="auth-step" id="step-1">
+      <div class="step-title" id="s1-title">Enter your email</div>
+      <div class="step-sub"   id="s1-sub">We'll send a 6-digit OTP to verify</div>
+      <input class="inp" id="auth-email" type="email" placeholder="yourname@email.com"/>
+      <input class="inp" id="auth-name"  type="text"  placeholder="Your full name"/>
+      <div id="email-msg"></div>
+      <button class="btn" id="s1-btn" onclick="sendOTP()" style="margin-top:4px">Send OTP →</button>
+      <button class="btn outline" onclick="goStep(0)" style="margin-top:8px">← Back</button>
+    </div>
+
+    <!-- STEP 2: OTP -->
+    <div class="auth-step" id="step-2">
+      <div class="step-title" id="s2-title">Verify OTP</div>
+      <div class="step-sub"   id="s2-sub">Enter the 6-digit code sent to your email</div>
+      <div class="otp-inputs">
+        <input class="otp-box" maxlength="1" type="tel" id="o0" oninput="otpInput(0)" onkeydown="otpKey(event,0)"/>
+        <input class="otp-box" maxlength="1" type="tel" id="o1" oninput="otpInput(1)" onkeydown="otpKey(event,1)"/>
+        <input class="otp-box" maxlength="1" type="tel" id="o2" oninput="otpInput(2)" onkeydown="otpKey(event,2)"/>
+        <input class="otp-box" maxlength="1" type="tel" id="o3" oninput="otpInput(3)" onkeydown="otpKey(event,3)"/>
+        <input class="otp-box" maxlength="1" type="tel" id="o4" oninput="otpInput(4)" onkeydown="otpKey(event,4)"/>
+        <input class="otp-box" maxlength="1" type="tel" id="o5" oninput="otpInput(5)" onkeydown="otpKey(event,5)"/>
+      </div>
+      <div id="otp-msg"></div>
+      <button class="btn" id="s2-btn" onclick="verifyOTP()">Verify & Enter →</button>
+      <button class="btn outline" onclick="goStep(1)" style="margin-top:8px">← Change Email</button>
+      <p style="text-align:center;font-size:12px;color:var(--stone);margin-top:14px">
+        Didn't receive? <button onclick="sendOTP()" style="background:none;border:none;color:var(--olive-dk);font-weight:600;cursor:pointer;font-size:12px">Resend OTP</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     🔐 SECRET ADMIN LOGIN PAGE
+     Only accessible via: ?superadmin=apnaarea2024
+     Nobody else sees this!
+══════════════════════════════════════ -->
+<div id="admin-screen">
+  <div class="admin-auth-title">🛡️ ApnaArea</div>
+  <div class="admin-auth-sub">Restricted Access — Authorised Personnel Only</div>
+  <div class="card admin-auth-card">
+    <input class="inp" id="admin-email" type="email" placeholder="Admin email"/>
+    <input class="inp" id="admin-pass"  type="password" placeholder="Admin password"/>
+    <div id="admin-msg"></div>
+    <button class="btn" onclick="adminLogin()" style="margin-top:4px">🔐 Login as Admin</button>
+  </div>
+  <div class="admin-secret-note">This page is not publicly accessible.</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════ -->
+<div id="app-shell">
+  <header class="app-header">
+    <div class="header-logo">Apna<span>Area</span></div>
+    <div class="header-right">
+      <button class="header-lang" onclick="toggleLang()" id="app-lang-btn">हिंदी</button>
+      <span class="badge role-b" id="app-role-badge">User</span>
+      <button class="header-logout" onclick="doLogout()" id="app-logout-btn">Logout</button>
+    </div>
+  </header>
+  <div id="main-view"></div>
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<div id="modal"></div>
+
+<script type="module">
+import { initializeApp }                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword,
+         signInWithEmailAndPassword, signOut,
+         onAuthStateChanged }                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc,
+         getDoc, serverTimestamp }                 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* 🔥 YOUR FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey:            "AIzaSyCptIwBRxg3bZ722gDMZn-uFJeXHN4Ne9s",
+  authDomain:        "apna-area-b90e8.firebaseapp.com",
+  projectId:         "apna-area-b90e8",
+  storageBucket:     "apna-area-b90e8.firebasestorage.app",
+  messagingSenderId: "812233449707",
+  appId:             "1:812233449707:web:d6044928c1889f303e5eae"
+};
+
+/* 🔐 YOUR SECRET ADMIN PASSWORD
+   Change this to whatever you want!
+   Keep it secret — only YOU know this */
+const ADMIN_SECRET_URL  = "apnaarea2024";   // URL key
+const ADMIN_EMAIL       = "admin@apnaarea.com"; // Your admin email
+const ADMIN_PASSWORD    = "Admin@ApnaArea#2024"; // Your admin password (change this!)
+
+let fbReady=false, auth, db;
+try{
+  const app=initializeApp(firebaseConfig);
+  auth=getAuth(app); db=getFirestore(app); fbReady=true;
+}catch(e){console.warn("Firebase not configured");}
+
+/* ═══ TRANSLATIONS ═══ */
+const T={
+  en:{
+    tagline:"Your neighbourhood, connected",
+    welcome:"Welcome!",howUse:"How will you use ApnaArea?",
+    publicUser:"Public User",publicDesc:"Browse & discover local shops near you",
+    shopOwner:"Shop Owner",ownerDesc:"List your shop & manage inventory",
+    enterEmail:"Enter your email",emailSub:"We'll send a 6-digit OTP to verify",
+    sendOtp:"Send OTP →",verifyOtp:"Verify OTP",otpSub:"Enter the 6-digit code sent to your email",
+    verifyEnter:"Verify & Enter →",back:"← Back",continue:"Continue →",
+    sending:"Sending...",verifying:"Verifying...",
+    morning:"Morning",afternoon:"Afternoon",evening:"Evening",greeting:"Good",
+    nearby:"Nearby Shops",locating:"Detecting location...",search:"Search shops, services...",
+    radius:"Radius:",openNow:"● Open Now",all:"All",
+    home:"Home",myShop:"My Shop",admin:"Admin",logout:"Logout",
+    directions:"🗺️ Directions",call:"📞 Call",inventory:"Inventory",
+    inStock:"In Stock",outOfStock:"Out of Stock",
+    dashboard:"Dashboard",welcomeBack:"Welcome back",
+    totalItems:"Total Items",inStockC:"In Stock",outC:"Out of Stock",
+    manageInv:"Manage Inventory",productName:"Product name",price:"Price (₹)",
+    addProduct:"➕ Add Product",remove:"Remove",
+    adminPanel:"Admin Panel",fullControl:"Full system control",
+    overview:"Overview",shops:"Shops",approvals:"Approvals",categories:"Categories",logs:"Logs",
+    totalShops:"Total Shops",activeShops:"Active",openShops:"Open Now",totalUsers:"Total Users",
+    pending:"Pending",approve:"✓ Approve",reject:"✕ Reject",delete:"Delete",recentLogs:"Recent Logs",
+    allowLoc:"Allow Location",locDesc:"ApnaArea needs your location to show nearby shops accurately.",
+    chooseCity:"Or choose your city:",verified:"Verified",km:"km",open:"● Open",closed:"● Closed",
+    noShops:"No shops found nearby.\nTry expanding your radius.",user:"User",owner:"Owner",
+  },
+  hi:{
+    tagline:"आपका मोहल्ला, जुड़ा हुआ",
+    welcome:"स्वागत है!",howUse:"आप ApnaArea का उपयोग कैसे करेंगे?",
+    publicUser:"सामान्य उपयोगकर्ता",publicDesc:"आस-पास की दुकानें खोजें",
+    shopOwner:"दुकानदार",ownerDesc:"अपनी दुकान लिस्ट करें और इन्वेंटरी प्रबंधित करें",
+    enterEmail:"अपना ईमेल दर्ज करें",emailSub:"हम 6-अंकीय OTP भेजेंगे",
+    sendOtp:"OTP भेजें →",verifyOtp:"OTP सत्यापित करें",otpSub:"ईमेल पर भेजा गया 6-अंकीय कोड दर्ज करें",
+    verifyEnter:"सत्यापित करें →",back:"← वापस",continue:"आगे बढ़ें →",
+    sending:"भेजा जा रहा है...",verifying:"सत्यापित हो रहा है...",
+    morning:"प्रभात",afternoon:"दोपहर",evening:"संध्या",greeting:"शुभ",
+    nearby:"आस-पास की दुकानें",locating:"स्थान पता चल रहा है...",search:"दुकानें, सेवाएं खोजें...",
+    radius:"दायरा:",openNow:"● अभी खुली",all:"सभी",
+    home:"होम",myShop:"मेरी दुकान",admin:"एडमिन",logout:"लॉग आउट",
+    directions:"🗺️ दिशा-निर्देश",call:"📞 कॉल",inventory:"इन्वेंटरी",
+    inStock:"उपलब्ध",outOfStock:"अनुपलब्ध",
+    dashboard:"डैशबोर्ड",welcomeBack:"वापसी पर स्वागत",
+    totalItems:"कुल आइटम",inStockC:"उपलब्ध",outC:"अनुपलब्ध",
+    manageInv:"इन्वेंटरी प्रबंधित करें",productName:"उत्पाद का नाम",price:"मूल्य (₹)",
+    addProduct:"➕ उत्पाद जोड़ें",remove:"हटाएं",
+    adminPanel:"एडमिन पैनल",fullControl:"पूर्ण सिस्टम नियंत्रण",
+    overview:"अवलोकन",shops:"दुकानें",approvals:"अनुमोदन",categories:"श्रेणियां",logs:"लॉग",
+    totalShops:"कुल दुकानें",activeShops:"सक्रिय",openShops:"अभी खुली",totalUsers:"कुल उपयोगकर्ता",
+    pending:"लंबित",approve:"✓ अनुमोदित",reject:"✕ अस्वीकार",delete:"हटाएं",recentLogs:"हाल के लॉग",
+    allowLoc:"स्थान अनुमति दें",locDesc:"ApnaArea को पास की दुकानें दिखाने के लिए आपका स्थान चाहिए।",
+    chooseCity:"या अपना शहर चुनें:",verified:"सत्यापित",km:"किमी",open:"● खुली",closed:"● बंद",
+    noShops:"आस-पास कोई दुकान नहीं मिली।\nदायरा बढ़ाएं।",user:"उपयोगकर्ता",owner:"दुकानदार",
+  }
+};
+
+const CG_CITIES=[
+  {name:"Rajnandgaon",lat:21.0975,lng:81.0292,pin:"491441"},
+  {name:"Bhilai",     lat:21.1938,lng:81.3509,pin:"490001"},
+  {name:"Raipur",     lat:21.2514,lng:81.6296,pin:"492001"},
+];
+
+const CATS=[
+  {id:"all", icon:"",   en:"All",      hi:"सभी"},
+  {id:"groc",icon:"🛒", en:"Grocery",  hi:"किराना"},
+  {id:"med", icon:"💊", en:"Medical",  hi:"मेडिकल"},
+  {id:"cafe",icon:"☕", en:"Cafe",     hi:"कैफे"},
+  {id:"pet", icon:"⛽", en:"Petrol",   hi:"पेट्रोल"},
+  {id:"gen", icon:"🏪", en:"General",  hi:"जनरल"},
+  {id:"hosp",icon:"🏥", en:"Hospital", hi:"अस्पताल"},
+  {id:"elec",icon:"⚡", en:"Electric", hi:"इलेक्ट्रिक"},
+  {id:"mosk",icon:"🕌", en:"Mosque",   hi:"मस्जिद"},
+];
+
+let SHOPS=[
+  {id:"s1",name:"Sharma Kirana Store",   cat:"🛒",cid:"groc",cnEn:"Grocery Store",  cnHi:"किराना दुकान",  addr:"Gandhi Chowk, Rajnandgaon",    addrHi:"गांधी चौक, राजनांदगांव",  ph:"9876543210",lat:21.0975,lng:81.0292,open:true, ver:true, tim:"8AM–10PM",inv:[{n:"चावल/Rice 5kg",p:220,s:true,u:"2h ago"},{n:"दाल/Dal 1kg",p:85,s:true,u:"3h ago"},{n:"तेल/Oil 1L",p:150,s:false,u:"1h ago"}]},
+  {id:"s2",name:"City Medical Store",    cat:"💊",cid:"med", cnEn:"Medical Store",   cnHi:"मेडिकल स्टोर",  addr:"Station Road, Rajnandgaon",    addrHi:"स्टेशन रोड, राजनांदगांव", ph:"9988776655",lat:21.0981,lng:81.0299,open:true, ver:true, tim:"9AM–9PM", inv:[{n:"Paracetamol",p:12,s:true,u:"1h ago"},{n:"Crocin",p:28,s:true,u:"2h ago"},{n:"Dolo 650",p:30,s:false,u:"30m ago"}]},
+  {id:"s3",name:"Bhilai Chai Corner",    cat:"☕",cid:"cafe",cnEn:"Cafe",            cnHi:"कैफे",           addr:"Sector 1, Bhilai",             addrHi:"सेक्टर 1, भिलाई",         ph:"9123456789",lat:21.1938,lng:81.3509,open:true, ver:true, tim:"6AM–11PM",inv:[{n:"Masala Chai",p:15,s:true,u:"Just now"},{n:"Samosa",p:10,s:true,u:"1h ago"}]},
+  {id:"s4",name:"Supela Petrol Pump",    cat:"⛽",cid:"pet", cnEn:"Petrol Pump",     cnHi:"पेट्रोल पंप",   addr:"Supela, Bhilai",               addrHi:"सुपेला, भिलाई",           ph:"9000111222",lat:21.1946,lng:81.3515,open:true, ver:true, tim:"24 Hours",inv:[{n:"Petrol/litre",p:103,s:true,u:"Just now"},{n:"Diesel/litre",p:90,s:true,u:"Just now"}]},
+  {id:"s5",name:"Raipur General Store",  cat:"🏪",cid:"gen", cnEn:"General Store",   cnHi:"जनरल स्टोर",    addr:"Pandri Market, Raipur",        addrHi:"पंडरी बाजार, रायपुर",     ph:"9800000001",lat:21.2514,lng:81.6296,open:false,ver:true, tim:"9AM–8PM", inv:[{n:"Soap/साबुन",p:35,s:true,u:"5h ago"},{n:"Shampoo",p:85,s:true,u:"5h ago"}]},
+  {id:"s6",name:"Shankar Nagar Hospital",cat:"🏥",cid:"hosp",cnEn:"Hospital",        cnHi:"अस्पताल",       addr:"Shankar Nagar, Raipur",        addrHi:"शंकर नगर, रायपुर",        ph:"9800000002",lat:21.2520,lng:81.6302,open:true, ver:true, tim:"24 Hours",inv:[{n:"OPD General",p:100,s:true,u:"Today"}]},
+  {id:"s7",name:"Nehru Nagar Electric",  cat:"⚡",cid:"elec",cnEn:"Electric Shop",   cnHi:"इलेक्ट्रिक",    addr:"Nehru Nagar, Bhilai",          addrHi:"नेहरू नगर, भिलाई",        ph:"9800000003",lat:21.1951,lng:81.3522,open:false,ver:false,tim:"10AM–7PM",inv:[{n:"LED Bulb 9W",p:65,s:true,u:"Yesterday"}]},
+  {id:"s8",name:"Jama Masjid",           cat:"🕌",cid:"mosk",cnEn:"Mosque",          cnHi:"मस्जिद",        addr:"Old City, Raipur",             addrHi:"पुराना शहर, रायपुर",      ph:"",          lat:21.2510,lng:81.6290,open:true, ver:true, tim:"5AM–9PM", inv:[]},
+];
+
+let PENDING=[
+  {name:"Nehru Nagar Electric",cat:"Electric Shop",owner:"Ramesh Kumar",time:"1 hr ago"},
+  {name:"Telibandha Cafe",cat:"Cafe",owner:"Priya Sahu",time:"3 hrs ago"},
+];
+
+const ADMIN_LOGS=[
+  {a:"Inventory updated — Sharma Kirana Store",t:"2 mins ago"},
+  {a:"New shop registered: Nehru Nagar Electric",t:"1 hr ago"},
+  {a:"Admin approved City Medical Store",t:"3 hrs ago"},
+  {a:"User registered from Bhilai",t:"5 hrs ago"},
+];
+
+/* ═══ STATE ═══ */
+let lang='en',activeView='home',activeAdminTab='overview';
+let selectedRole='public',generatedOTP='',userEmail='',currentUser=null,currentRole='public';
+let userLat=null,userLng=null;
+let filterRadius=5,filterOpen=false,filterCat='all',searchTerm='';
+let myInv=[...SHOPS[0].inv],myShopOpen=true,currentStep=0;
+
+const t=k=>T[lang][k]||T.en[k]||k;
+
+/* ═══ CHECK SECRET ADMIN URL ═══ */
+function checkSecretURL(){
+  const params=new URLSearchParams(window.location.search);
+  const secret=params.get('superadmin');
+  return secret===ADMIN_SECRET_URL;
+}
+
+/* ═══ DISTANCE (Haversine) ═══ */
+function haversine(la1,ln1,la2,ln2){
+  const R=6371,dL=(la2-la1)*Math.PI/180,dN=(ln2-ln1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dN/2)**2;
+  return+(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))).toFixed(1);
+}
+
+function withDist(){
+  return SHOPS
+    .map(s=>({...s,dist:userLat!==null?haversine(userLat,userLng,s.lat,s.lng):null}))
+    .sort((a,b)=>a.dist!==null&&b.dist!==null?a.dist-b.dist:0);
+}
+
+/* ═══ GPS — HIGH ACCURACY ═══ */
+function requestLoc(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(
+    pos=>{userLat=pos.coords.latitude;userLng=pos.coords.longitude;refreshShops();updateLocLabel();},
+    ()=>{},
+    {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+  );
+}
+
+window.setCity=city=>{userLat=city.lat;userLng=city.lng;closeModal();refreshShops();updateLocLabel();};
+window.redetectLoc=()=>{closeModal();requestLoc();};
+
+function updateLocLabel(){
+  const el=document.getElementById('loc-label');if(!el)return;
+  if(userLat!==null){
+    let min=9999,near=CG_CITIES[0];
+    CG_CITIES.forEach(c=>{const d=haversine(userLat,userLng,c.lat,c.lng);if(d<min){min=d;near=c;}});
+    el.textContent=`${near.name} · ${min} ${t('km')}`;
+  }else el.textContent=t('locating');
+}
+
+/* ═══ LANG ═══ */
+window.setLang=l=>{
+  lang=l;
+  document.getElementById('lang-en').classList.toggle('active',l==='en');
+  document.getElementById('lang-hi').classList.toggle('active',l==='hi');
+  document.getElementById('auth-tagline').textContent=t('tagline');
+  updateAuthUI();
+};
+
+function updateAuthUI(){
+  const s=(id,k)=>{const e=document.getElementById(id);if(e)e.textContent=t(k);};
+  s('s0-title','welcome');s('s0-sub','howUse');s('s0-btn','continue');
+  s('s1-title','enterEmail');s('s1-sub','emailSub');s('s1-btn','sendOtp');
+  s('s2-title','verifyOtp');s('s2-sub','otpSub');s('s2-btn','verifyEnter');
+  s('rn-public','publicUser');s('rd-public','publicDesc');
+  s('rn-owner','shopOwner');s('rd-owner','ownerDesc');
+}
+
+window.toggleLang=()=>{
+  lang=lang==='en'?'hi':'en';
+  document.getElementById('app-lang-btn').textContent=lang==='en'?'हिंदी':'English';
+  document.getElementById('app-logout-btn').textContent=t('logout');
+  buildNav();renderView();
+};
+
+/* ═══ PUBLIC AUTH FLOW ═══ */
+window.selectRole=role=>{
+  selectedRole=role;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('role-'+role).classList.add('selected');
+};
+
+window.goStep=step=>{
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  document.getElementById('dot-'+currentStep).classList.remove('active');
+  currentStep=step;
+  document.getElementById('step-'+currentStep).classList.add('active');
+  document.getElementById('dot-'+currentStep).classList.add('active');
+};
+
+window.sendOTP=()=>{
+  const email=document.getElementById('auth-email').value.trim();
+  const name=document.getElementById('auth-name').value.trim();
+  const msgEl=document.getElementById('email-msg');
+  if(!email||!email.includes('@')||!email.includes('.')){
+    msgEl.innerHTML=`<div class="msg error">Please enter a valid email address.</div>`;return;
+  }
+  if(!name){msgEl.innerHTML=`<div class="msg error">Please enter your full name.</div>`;return;}
+  userEmail=email;
+  generatedOTP=Math.floor(100000+Math.random()*900000).toString();
+  msgEl.innerHTML=`<div class="msg success">OTP sent to ${email}!<br><small style="opacity:.8">Demo OTP: <b style="font-size:15px;letter-spacing:2px">${generatedOTP}</b></small></div>`;
+  setTimeout(()=>goStep(2),800);
+};
+
+window.otpInput=idx=>{
+  const b=document.getElementById('o'+idx);
+  b.value=b.value.replace(/\D/g,'');
+  if(b.value&&idx<5)document.getElementById('o'+(idx+1)).focus();
+};
+window.otpKey=(e,idx)=>{
+  if(e.key==='Backspace'&&!document.getElementById('o'+idx).value&&idx>0)
+    document.getElementById('o'+(idx-1)).focus();
+};
+
+window.verifyOTP=async()=>{
+  const entered=[0,1,2,3,4,5].map(i=>document.getElementById('o'+i).value).join('');
+  const msgEl=document.getElementById('otp-msg');
+  if(entered.length<6){msgEl.innerHTML=`<div class="msg error">Enter the complete 6-digit OTP.</div>`;return;}
+  if(entered!==generatedOTP){
+    msgEl.innerHTML=`<div class="msg error">Incorrect OTP. Try again.</div>`;
+    [0,1,2,3,4,5].forEach(i=>{document.getElementById('o'+i).value='';});
+    document.getElementById('o0').focus();return;
+  }
+  document.getElementById('s2-btn').textContent=t('verifying');
+  msgEl.innerHTML='';
+  const name=document.getElementById('auth-name').value.trim();
+  if(fbReady){
+    const tmpPass='AA_'+generatedOTP+'_x9z';
+    try{
+      let uid;
+      try{
+        const c=await createUserWithEmailAndPassword(auth,userEmail,tmpPass);
+        uid=c.user.uid;
+        await setDoc(doc(db,'users',uid),{uid,name,email:userEmail,role:selectedRole,status:'active',lang,createdAt:serverTimestamp()});
+      }catch(e){
+        if(e.code==='auth/email-already-in-use'){
+          const c=await signInWithEmailAndPassword(auth,userEmail,tmpPass);
+          uid=c.user.uid;
+          try{const ud=await getDoc(doc(db,'users',uid));if(ud.exists())selectedRole=ud.data().role||selectedRole;}catch{}
+        }else throw e;
+      }
+      currentUser={uid,email:userEmail,name};
+    }catch(e){currentUser={uid:'local',email:userEmail,name};}
+  }else{currentUser={uid:'local',email:userEmail,name};}
+  currentRole=selectedRole;
+  document.getElementById('s2-btn').textContent=t('verifyEnter');
+  showApp();
+};
+
+/* ═══ SECRET ADMIN LOGIN ═══ */
+window.adminLogin=async()=>{
+  const email=document.getElementById('admin-email').value.trim();
+  const pass=document.getElementById('admin-pass').value;
+  const msgEl=document.getElementById('admin-msg');
+  msgEl.innerHTML=`<div class="msg success">Verifying...</div>`;
+  if(fbReady){
+    try{
+      const c=await signInWithEmailAndPassword(auth,email,pass);
+      // Check role in Firestore
+      try{
+        const ud=await getDoc(doc(db,'users',c.user.uid));
+        if(ud.exists()&&ud.data().role==='super_admin'){
+          currentUser={uid:c.user.uid,email,name:'Super Admin'};
+          currentRole='super_admin';
+          showApp();return;
+        }
+      }catch{}
+      // If not in Firestore yet, check hardcoded admin email
+      if(email===ADMIN_EMAIL){
+        currentUser={uid:c.user.uid,email,name:'Super Admin'};
+        currentRole='super_admin';
+        showApp();return;
+      }
+      msgEl.innerHTML=`<div class="msg error">Not authorized as admin.</div>`;
+      signOut(auth);
+    }catch(e){
+      msgEl.innerHTML=`<div class="msg error">Wrong email or password.</div>`;
+    }
+  }else{
+    // Local mode — check hardcoded
+    if(email===ADMIN_EMAIL&&pass===ADMIN_PASSWORD){
+      currentUser={uid:'admin-local',email,name:'Super Admin'};
+      currentRole='super_admin';
+      showApp();
+    }else{
+      msgEl.innerHTML=`<div class="msg error">Wrong email or password.</div>`;
+    }
+  }
+};
+
+/* ═══ APP SHELL ═══ */
+function showApp(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('admin-screen').style.display='none';
+  document.getElementById('app-shell').style.display='flex';
+  document.getElementById('app-lang-btn').textContent=lang==='en'?'हिंदी':'English';
+  document.getElementById('app-logout-btn').textContent=t('logout');
+  const rm={public:t('user'),shop_owner:t('owner'),super_admin:'🛡️ Admin'};
+  document.getElementById('app-role-badge').textContent=rm[currentRole]||t('user');
+  activeView=currentRole==='super_admin'?'admin':currentRole==='shop_owner'?'owner':'home';
+  buildNav();renderView();
+  if(activeView==='home')requestLoc();
+}
+
+function buildNav(){
+  const items=[{id:'home',icon:'🏠',lbl:t('home')}];
+  if(currentRole==='shop_owner'||currentRole==='super_admin')
+    items.push({id:'owner',icon:'🏪',lbl:t('myShop')});
+  if(currentRole==='super_admin')
+    items.push({id:'admin',icon:'🛡️',lbl:t('admin')});
+  document.getElementById('bottom-nav').innerHTML=items.map(it=>`
+    <button class="nav-item ${activeView===it.id?'active':''}" onclick="setView('${it.id}')">
+      <span class="nav-icon">${it.icon}</span>
+      <span class="nav-lbl">${it.lbl}</span>
+    </button>`).join('');
+}
+
+window.setView=v=>{activeView=v;buildNav();renderView();if(v==='home')requestLoc();};
+
+window.doLogout=()=>{
+  if(fbReady)signOut(auth).catch(()=>{});
+  currentUser=null;currentRole='public';activeView='home';userLat=null;userLng=null;
+  document.getElementById('app-shell').style.display='none';
+  // Go back to right screen
+  if(checkSecretURL()){
+    document.getElementById('admin-screen').style.display='flex';
+  }else{
+    document.getElementById('auth-screen').style.display='flex';
+  }
+  currentStep=0;
+  document.getElementById('step-0').classList.add('active');
+  document.getElementById('step-1').classList.remove('active');
+  document.getElementById('step-2').classList.remove('active');
+};
+
+function renderView(){
+  const mv=document.getElementById('main-view');if(!mv)return;
+  if(activeView==='home') mv.innerHTML=homeHTML();
+  if(activeView==='owner')mv.innerHTML=ownerHTML();
+  if(activeView==='admin')mv.innerHTML=adminHTML();
+}
+
+/* ═══ HOME VIEW ═══ */
+function homeHTML(){
+  const h=new Date().getHours();
+  const tod=h<12?t('morning'):h<17?t('afternoon'):t('evening');
+  const name=currentUser?.name?.split(' ')[0]||'';
+  return `
+  <div class="home-hero">
+    <div class="home-greeting">${t('greeting')} ${tod}, ${name}!</div>
+    <div class="home-title">${t('nearby')}</div>
+    <div class="location-pill" onclick="openLocPicker()">
+      <span class="loc-dot"></span>
+      <span id="loc-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${userLat?'Locating...':t('locating')}</span>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-inp" placeholder="${t('search')}" oninput="onSearch(this.value)" value="${searchTerm}"/>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <span style="font-size:13px;color:var(--stone);font-weight:500">${t('radius')}</span>
+    ${[1,3,5,10].map(r=>`<button class="filter-chip ${filterRadius===r?'active':''}" onclick="setRadius(${r})">${r}${t('km')}</button>`).join('')}
+    <button class="open-chip ${filterOpen?'active':''}" onclick="toggleOpenF()">${t('openNow')}</button>
+  </div>
+  <div class="cat-strip">
+    ${CATS.map(c=>`<button class="cat-pill ${filterCat===c.id?'active':''}" onclick="setCat('${c.id}')">${c.icon} ${lang==='hi'?c.hi:c.en}</button>`).join('')}
+  </div>
+  <div class="shops-wrap" id="shops-wrap">${shopsHTML()}</div>`;
+}
+
+function shopsHTML(){
+  let list=withDist();
+  if(userLat!==null)list=list.filter(s=>s.dist===null||s.dist<=filterRadius);
+  if(filterOpen)list=list.filter(s=>s.open);
+  if(filterCat!=='all'){const ci=CATS.find(c=>c.id===filterCat);if(ci?.icon)list=list.filter(s=>s.cat===ci.icon);}
+  if(searchTerm){const q=searchTerm.toLowerCase();list=list.filter(s=>s.name.toLowerCase().includes(q)||s.cnEn.toLowerCase().includes(q)||s.addr.toLowerCase().includes(q));}
+  if(!list.length)return`<div class="empty-state"><span class="empty-icon">🔍</span>${t('noShops')}</div>`;
+  return list.map(s=>{
+    const addr=lang==='hi'&&s.addrHi?s.addrHi:s.addr;
+    const cn=lang==='hi'?s.cnHi:s.cnEn;
+    const dStr=s.dist!==null?`📏 ${s.dist} ${t('km')}`:'';
+    return `<div class="shop-card" onclick="openShop('${s.id}')">
+      <div class="shop-top">
+        <div style="display:flex;gap:12px;align-items:flex-start;flex:1">
+          <div class="shop-icon-w">${s.cat}</div>
+          <div><div class="shop-name">${s.name}</div><div class="shop-cat">${cn}</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+          <span class="badge ${s.open?'open':'closed'}">${s.open?t('open'):t('closed')}</span>
+          ${s.ver?`<span class="badge verified">✓ ${t('verified')}</span>`:''}
+        </div>
+      </div>
+      <div class="shop-addr">📍 ${addr}</div>
+      <div class="shop-bottom">
+        ${s.ph?`<span style="font-size:12px;color:var(--stone)">📞 ${s.ph}</span>`:'<span></span>'}
+        <span class="shop-dist">${dStr}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.refreshShops=()=>{const w=document.getElementById('shops-wrap');if(w)w.innerHTML=shopsHTML();updateLocLabel();};
+window.onSearch=v=>{searchTerm=v;refreshShops();};
+window.setRadius=r=>{filterRadius=r;renderView();};
+window.toggleOpenF=()=>{filterOpen=!filterOpen;renderView();};
+window.setCat=c=>{filterCat=c;renderView();};
+
+window.openLocPicker=()=>{
+  document.getElementById('modal').innerHTML=`
+  <div class="modal-bg" onclick="closeModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="border-radius:24px;margin:16px;max-width:420px;align-self:center">
+      <div class="modal-handle"></div>
+      <div class="modal-body">
+        <div style="text-align:center;padding:10px 0 20px;display:flex;flex-direction:column;align-items:center;gap:14px">
+          <div style="font-size:48px">📍</div>
+          <div style="font-family:var(--fd);font-size:20px;font-weight:700">${t('allowLoc')}</div>
+          <p style="color:var(--stone);font-size:13px;line-height:1.6;max-width:280px;text-align:center">${t('locDesc')}</p>
+          <button class="btn" style="max-width:260px" onclick="redetectLoc()">📍 Detect My Location</button>
+          <p style="font-size:13px;color:var(--stone)">${t('chooseCity')}</p>
+          <div class="city-grid">
+            ${CG_CITIES.map(c=>`<button class="city-btn" onclick='setCity(${JSON.stringify(c)})'><b>${c.name}</b><br><small style="color:var(--stone);font-weight:400">${c.pin}</small></button>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
+
+window.openShop=id=>{
+  const s=SHOPS.find(x=>x.id===id);if(!s)return;
+  const addr=lang==='hi'&&s.addrHi?s.addrHi:s.addr;
+  const cn=lang==='hi'?s.cnHi:s.cnEn;
+  const mapsUrl=`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`;
+  document.getElementById('modal').innerHTML=`
+  <div class="modal-bg" onclick="closeModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-body">
+        <div class="modal-header">
+          <div>
+            <div style="font-size:13px;color:var(--stone);margin-bottom:4px">${s.cat} ${cn}</div>
+            <div class="modal-title">${s.name}</div>
+          </div>
+          <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-meta">
+          <span class="badge ${s.open?'open':'closed'}">${s.open?t('open'):t('closed')}</span>
+          ${s.ver?`<span class="badge verified">✓ ${t('verified')}</span>`:''}
+          <span class="badge role-b">🕐 ${s.tim}</span>
+          ${s.dist!==null?`<span class="badge role-b">📏 ${s.dist} ${t('km')}</span>`:''}
+        </div>
+        <div class="modal-detail">📍 ${addr}</div>
+        ${s.ph?`<div class="modal-detail">📞 ${s.ph}</div>`:''}
+        <div class="action-row">
+          <button class="action-btn primary" onclick="window.open('${mapsUrl}','_blank')">${t('directions')}</button>
+          ${s.ph?`<button class="action-btn secondary" onclick="window.open('tel:${s.ph}')">${t('call')}</button>`:''}
+        </div>
+        <div class="inv-title">📦 ${t('inventory')}</div>
+        ${s.inv.length?s.inv.map(it=>`
+          <div class="inv-item">
+            <div><div class="inv-name">${it.n}</div><div class="inv-updated">Updated ${it.u}</div></div>
+            <div style="display:flex;gap:10px;align-items:center">
+              ${it.p?`<div class="inv-price">₹${it.p}</div>`:''}
+              <span class="badge ${it.s?'open':'closed'}">${it.s?t('inStock'):t('outOfStock')}</span>
+            </div>
+          </div>`).join(''):`<div style="color:var(--stone);font-size:13px;padding:12px 0">No inventory listed.</div>`}
+      </div>
+    </div>
+  </div>`;
+};
+
+window.closeModal=()=>{document.getElementById('modal').innerHTML='';};
+
+/* ═══ OWNER DASHBOARD ═══ */
+function ownerHTML(){
+  const s=SHOPS[0];
+  return `
+  <div class="view-wrap">
+    <div class="view-title">${t('dashboard')}</div>
+    <div class="view-sub">${t('welcomeBack')}, ${currentUser?.name?.split(' ')[0]||''} 👋</div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <div style="font-weight:700;font-size:16px">${s.name}</div>
+        <div style="font-size:12px;color:var(--stone);margin-top:4px">${s.addr}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="badge ${myShopOpen?'open':'closed'}">${myShopOpen?t('open'):t('closed')}</span>
+        <button class="tog-sw ${myShopOpen?'on':''}" onclick="toggleMyShop()"></button>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num">${myInv.length}</div><div class="stat-lbl">${t('totalItems')}</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--success)">${myInv.filter(i=>i.s).length}</div><div class="stat-lbl">${t('inStockC')}</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--error)">${myInv.filter(i=>!i.s).length}</div><div class="stat-lbl">${t('outC')}</div></div>
+      <div class="stat-box"><div class="stat-num" style="font-size:16px">${s.tim}</div><div class="stat-lbl">Timings</div></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">📦 ${t('manageInv')}</div>
+      <div class="inv-form">
+        <input class="inp" id="ni-name"  placeholder="${t('productName')}"/>
+        <input class="inp" id="ni-price" type="number" placeholder="${t('price')}"/>
+        <select class="inp" id="ni-stock">
+          <option value="1">${t('inStock')}</option>
+          <option value="0">${t('outOfStock')}</option>
+        </select>
+        <button class="btn" onclick="addInvItem()">${t('addProduct')}</button>
+      </div>
+      <div id="inv-list">${invListHTML()}</div>
+    </div>
+  </div>`;
+}
+
+function invListHTML(){
+  if(!myInv.length)return`<div style="color:var(--stone);font-size:13px;padding:12px 0;text-align:center">No items yet. Add one above!</div>`;
+  return myInv.map((item,i)=>`
+    <div class="inv-row-e">
+      <div>
+        <div style="font-weight:600;font-size:14px">${item.n}</div>
+        <div style="font-size:12px;color:var(--stone)">₹${item.p} · ${item.u}</div>
+      </div>
+      <div class="inv-acts">
+        <span class="badge ${item.s?'open':'closed'}" style="cursor:pointer" onclick="togStock(${i})">${item.s?t('inStock'):t('outOfStock')}</span>
+        <button class="btn sm danger" onclick="rmItem(${i})">${t('remove')}</button>
+      </div>
+    </div>`).join('');
+}
+
+window.toggleMyShop=()=>{myShopOpen=!myShopOpen;SHOPS[0].open=myShopOpen;document.getElementById('main-view').innerHTML=ownerHTML();};
+window.addInvItem=()=>{
+  const n=document.getElementById('ni-name').value.trim();
+  const p=document.getElementById('ni-price').value||0;
+  const s=document.getElementById('ni-stock').value==='1';
+  if(!n)return;
+  myInv.push({n,p:Number(p),s,u:'Just now'});SHOPS[0].inv=myInv;
+  document.getElementById('inv-list').innerHTML=invListHTML();
+  document.getElementById('ni-name').value='';document.getElementById('ni-price').value='';
+};
+window.togStock=i=>{myInv[i].s=!myInv[i].s;SHOPS[0].inv=myInv;document.getElementById('inv-list').innerHTML=invListHTML();};
+window.rmItem=i=>{myInv.splice(i,1);SHOPS[0].inv=myInv;document.getElementById('inv-list').innerHTML=invListHTML();};
+
+/* ═══ ADMIN PANEL ═══ */
+function adminHTML(){
+  const tabs=['overview','shops','approvals','categories','logs'];
+  return `
+  <div class="admin-banner">
+    <div><h2>🛡️ ${t('adminPanel')}</h2><p>${t('fullControl')}</p></div>
+    <span class="badge open">● Live</span>
+  </div>
+  <div class="tab-nav">${tabs.map(tab=>`<button class="tab-btn ${activeAdminTab===tab?'active':''}" onclick="setAdminTab('${tab}')">${t(tab)}</button>`).join('')}</div>
+  <div id="atc">${adminTabHTML()}</div>`;
+}
+
+function adminTabHTML(){
+  if(activeAdminTab==='overview')return`<div class="tab-content active">
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num">${SHOPS.length}</div><div class="stat-lbl">${t('totalShops')}</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--success)">${SHOPS.filter(s=>s.ver).length}</div><div class="stat-lbl">${t('activeShops')}</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--success)">${SHOPS.filter(s=>s.open).length}</div><div class="stat-lbl">${t('openShops')}</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--olive-dk)">3,240</div><div class="stat-lbl">${t('totalUsers')}</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:#7a5a2a">${PENDING.length}</div><div class="stat-lbl">${t('pending')}</div></div>
+      <div class="stat-box"><div class="stat-num">3</div><div class="stat-lbl">Cities</div></div>
+    </div></div>`;
+
+  if(activeAdminTab==='shops')return`<div class="tab-content active">${SHOPS.map(s=>`
+    <div class="p-card">
+      <div class="p-card-top">
+        <div><div class="p-name">${s.cat} ${s.name}</div><div class="p-meta">${s.addr}</div></div>
+        <span class="badge ${s.ver?'verified':'pending'}">${s.ver?'✓ '+t('verified'):t('pending')}</span>
+      </div>
+      <button class="btn sm danger" onclick="admDelete('${s.id}')">${t('delete')}</button>
+    </div>`).join('')}</div>`;
+
+  if(activeAdminTab==='approvals')return`<div class="tab-content active">${PENDING.length?PENDING.map((p,i)=>`
+    <div class="p-card">
+      <div class="p-card-top">
+        <div><div class="p-name">${p.name}</div><div class="p-meta">${p.cat} · ${p.owner} · ${p.time}</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn sm success-b" onclick="admApprove(${i})">${t('approve')}</button>
+        <button class="btn sm danger"    onclick="admReject(${i})">${t('reject')}</button>
+      </div>
+    </div>`).join(''):`<div class="empty-state"><span class="empty-icon">✅</span>All caught up!</div>`}</div>`;
+
+  if(activeAdminTab==='categories')return`<div class="tab-content active">${CATS.filter(c=>c.id!=='all').map(c=>`
+    <div class="p-card" style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:15px;font-weight:600">${c.icon} ${lang==='hi'?c.hi:c.en}</span>
+    </div>`).join('')}</div>`;
+
+  if(activeAdminTab==='logs')return`<div class="tab-content active">
+    <div style="font-family:var(--fd);font-size:17px;font-weight:700;margin-bottom:14px">${t('recentLogs')}</div>
+    ${ADMIN_LOGS.map(l=>`<div class="log-item"><div class="log-action">→ ${l.a}</div><div class="log-time">${l.t}</div></div>`).join('')}</div>`;
+
+  return '';
+}
+
+window.setAdminTab=tab=>{
+  activeAdminTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.getAttribute('onclick').includes(`'${tab}'`)));
+  document.getElementById('atc').innerHTML=adminTabHTML();
+};
+window.admDelete=id=>{SHOPS=SHOPS.filter(s=>s.id!==id);document.getElementById('atc').innerHTML=adminTabHTML();};
+window.admApprove=i=>{PENDING.splice(i,1);document.getElementById('atc').innerHTML=adminTabHTML();};
+window.admReject=i=>{PENDING.splice(i,1);document.getElementById('atc').innerHTML=adminTabHTML();};
+
+/* ═══ INIT — Decide which screen to show ═══ */
+function init(){
+  document.getElementById('loading').style.display='none';
+  if(checkSecretURL()){
+    // Secret admin URL detected!
+    document.getElementById('admin-screen').style.display='flex';
+  }else{
+    document.getElementById('auth-screen').style.display='flex';
+  }
+}
+
+if(fbReady){
+  onAuthStateChanged(auth,()=>init());
+}else{
+  setTimeout(init,800);
+}
+</script>
+</body>
+</html>
