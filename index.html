@@ -638,29 +638,28 @@ window.adminLogin=async()=>{
   msgEl.innerHTML=`<div class="msg success">Verifying...</div>`;
   if(fbReady){
     try{
+      // Login karo
       const c=await signInWithEmailAndPassword(auth,email,pass);
-      // Check role in Firestore
-      try{
-        const ud=await getDoc(doc(db,'users',c.user.uid));
-        if(ud.exists()&&ud.data().role==='super_admin'){
-          currentUser={uid:c.user.uid,email,name:'Super Admin'};
-          currentRole='super_admin';
-          showApp();return;
-        }
-      }catch{}
-      // If not in Firestore yet, check hardcoded admin email
-      if(email===ADMIN_EMAIL){
+      // Force token refresh — Custom Claims tabhi milenge!
+      const tokenResult=await c.user.getIdTokenResult(true);
+      // Check Custom Claim — admin:true
+      if(tokenResult.claims.admin===true){
         currentUser={uid:c.user.uid,email,name:'Super Admin'};
         currentRole='super_admin';
         showApp();return;
       }
+      // Not admin
       msgEl.innerHTML=`<div class="msg error">Not authorized as admin.</div>`;
       signOut(auth);
     }catch(e){
-      msgEl.innerHTML=`<div class="msg error">Wrong email or password.</div>`;
+      if(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found'){
+        msgEl.innerHTML=`<div class="msg error">Wrong email or password.</div>`;
+      }else{
+        msgEl.innerHTML=`<div class="msg error">Error: ${e.message}</div>`;
+      }
     }
   }else{
-    // Local mode — check hardcoded
+    // Local mode
     if(email===ADMIN_EMAIL&&pass===ADMIN_PASSWORD){
       currentUser={uid:'admin-local',email,name:'Super Admin'};
       currentRole='super_admin';
